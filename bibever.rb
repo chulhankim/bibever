@@ -150,6 +150,8 @@ def ref_guid(notebooks)
   notebooks.each do |notebook|
     return notebook.guid if notebook.name == "ref"
   end
+  puts "There is no notebook named \"ref\"."
+  exit(1)
 end
 
 ref_filter = Evernote::EDAM::NoteStore::NoteFilter.new
