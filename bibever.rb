@@ -54,32 +54,107 @@ class Bibitem
   def generate_bibtex
     bib = "@#{@type}\{"
     if @key == nil
+      if @year.to_s.to_i == 0
+        y = "0"
+      else
+        y = @year.to_s[2..3]
+      end
       first_author = @author.split(" and ")[0]
       first_author_split = first_author.split(", ")
-      first_author_key = (first_author_split[-1][0] + first_author_split[0]).downcase + @year.to_s[2..3]
-      bib << first_author_key + ","
+      first_author_key = (toalp(first_author_split[-1][0]) +
+                          toalp(first_author_split[0])).gsub(/\s/, '') + y +
+      @title[0..1].gsub(/\s/, '') +
+      @title[-2..-1].gsub(/\s/, '')
+      bib << first_author_key.downcase + ","
     else
       bib << @key + ","
     end
 
-    bib << "\n\tauthor: \"#{@author}\"," if @author != nil
-    bib << "\n\ttitle: \"#{@title}\"," if @title != nil
-    bib << "\n\tjournal: \"#{@journal}\"," if @journal != nil
-    bib << "\n\tyear: \"#{@year}\"," if @year != nil
-    bib << "\n\tvolume: \"#{@volume}\"," if @volume != nil
-    bib << "\n\tnumber: \"#{@number}\"," if @number != nil
-    bib << "\n\tpages: \"#{@pages}\"," if @pages != nil
-    bib << "\n\tmonth: #{@month}," if @month != nil
-    bib << "\n\tpublisher: \"#{@publisher}\"," if @publisher != nil
-    bib << "\n\tbooktitle: \"#{@booktitle}\"," if @booktitle != nil
-    bib << "\n\tseries: \"#{@series}\"," if @series != nil
-    bib << "\n\taddress: \"#{@address}\"," if @address != nil
-    bib << "\n\tchapter: \"#{@chapter}\"," if @chapter != nil
-    bib << "\n\tedition: \"#{@edition}\"," if @edition != nil
-    bib << "\n\tschool: \"#{@school}\"," if @school != nil
-    bib << "\n\turl: \"#{@url}\"," if @url != nil
+    organise_author
+    bib << "\n\tauthor = \"#{@author}\"," if @author != nil
+    bib << "\n\ttitle = \"#{@title}\"," if @title != nil
+    bib << "\n\tjournal = \"#{@journal}\"," if @journal != nil
+    bib << "\n\tyear = \"#{@year}\"," if @year != nil
+    bib << "\n\tvolume = \"#{@volume}\"," if @volume != nil
+    bib << "\n\tnumber = \"#{@number}\"," if @number != nil
+    bib << "\n\tpages = \"#{@pages}\"," if @pages != nil
+    bib << "\n\tmonth = #{@month}," if @month != nil
+    bib << "\n\tpublisher = \"#{@publisher}\"," if @publisher != nil
+    bib << "\n\tbooktitle = \"#{@booktitle}\"," if @booktitle != nil
+    bib << "\n\tseries = \"#{@series}\"," if @series != nil
+    bib << "\n\taddress = \"#{@address}\"," if @address != nil
+    bib << "\n\tchapter = \"#{@chapter}\"," if @chapter != nil
+    bib << "\n\tedition = \"#{@edition}\"," if @edition != nil
+    bib << "\n\tschool = \"#{@school}\"," if @school != nil
+    bib << "\n\turl = \"#{@url}\"," if @url != nil
 
     bib = bib[0...-1] + "\n\}"
+  end
+
+  def toalp(aut)
+    ind = /ç/ =~ aut
+    if ind != nil
+      aut[ind] = "c"
+    end
+
+    ind = /ü/ =~ aut
+    if ind != nil
+      aut[ind] = "u"
+    end
+
+    ind = /ö/ =~ aut
+    if ind != nil
+      aut[ind] = "o"
+    end
+
+    ind = /ó/ =~ aut
+    if ind != nil
+      aut[ind] = "o"
+    end
+
+    ind = /ι/ =~ aut
+    if ind != nil
+      aut[ind] = "i"
+    end
+
+    ind = /é/ =~ aut
+    if ind != nil
+      aut[ind] = "e"
+    end
+
+    return aut
+  end
+
+  def organise_author
+    ind = /ç/ =~ @author
+    if ind != nil
+      @author[ind] = "{\\c c}"
+    end
+
+    ind = /ü/ =~ @author
+    if ind != nil
+      @author[ind] = "{\\\"u}"
+    end
+
+    ind = /ö/ =~ @author
+    if ind != nil
+      @author[ind] = "{\\\"o}"
+    end
+
+    ind = /ó/ =~ @author
+    if ind != nil
+      @author[ind] = "\\\'{o}"
+    end
+
+    ind = /ι/ =~ @author
+    if ind != nil
+      @author[ind] = "$itoa$"
+    end
+
+    ind = /é/ =~ @author
+    if ind != nil
+      @author[ind] = "{\\\'e}"
+    end
   end
 end
 
@@ -205,6 +280,7 @@ ref_note_list.each do |ref|
   bib.edition = note_args[:edition] if note_args[:edition] != nil
   bib.school = note_args[:school] if note_args[:school] != nil
   bib.url = note_args[:url] if note_args[:url] != nil
+  bib.key = note_args[:key] if note_args[:key] != nil
 
   # Add to the list
   bib_list.push(bib)
@@ -226,5 +302,5 @@ rescue => e
 end
 
 puts "Done."
-puts bib_out
+# puts bib_out
 puts "Elapsed time: #{Time.now - start_time} sec."
